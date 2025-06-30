@@ -121,28 +121,26 @@
       </table>
 
       <hr>
-     <h2>Anexos</h2>
-    <table class="anexos-table" style="width:100%; margin-top: 10px;">
-      <tbody>
-        ${(() => {
-                let html = '';
-                for (let i = 0; i < anexosBase64.length; i += 2) {
-                    const img1 = anexosBase64[i];
-                    const img2 = anexosBase64[i + 1];
-                    html += `
-              <tr>
-                <td style="width: 50%; padding: 10px;">
-                  <img src="${img1}" style="width: 100%; max-height: 250px; object-fit: contain; border: 1px solid #ccc; padding: 5px;" />
-                </td>
-                <td style="width: 50%; padding: 10px;">
-                  ${img2 ? `<img src="${img2}" style="width: 100%; max-height: 250px; object-fit: contain; border: 1px solid #ccc; padding: 5px;" />` : ''}
-                </td>
-              </tr>`;
-                }
-                return html;
-            })()}
-      </tbody>
-    </table>
+    <h2>Anexos</h2>
+    <div class="anexos-grid" style="display: flex; flex-wrap: wrap; gap: 10px;">
+      ${anexosBase64.map(base64 => `
+        <div style="
+          width: calc(50% - 10px);
+          page-break-inside: avoid;
+          padding: 5px;
+        ">
+          <img src="${base64}" style="
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border: 1px solid #ccc;
+            display: block;
+            margin: 0 auto;
+          " />
+        </div>
+      `).join('')}
+    </div>
+
 
 
       <div class="signature-line">

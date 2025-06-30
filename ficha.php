@@ -110,14 +110,14 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
     <div class="bg-white p-4 rounded-lg shadow space-y-4">
       <div>
         <label class="block font-medium text-gray-700 mb-1">Peso Bruto do Produto</label>
-        <input id="peso-bruto" type="text" class="w-full border rounded p-2 text-right" placeholder="Ex: 2.500" />
+        <input inputmode="numeric" id="peso-bruto" type="text" class="w-full border rounded p-2 text-right" placeholder="Ex: 2.500" />
       </div>
 
       <div id="itens-container" class="space-y-3"></div>
 
       <div>
         <label class="block font-medium text-gray-700 mb-1">Descarte</label>
-        <input id="descarte" type="text" readonly class="w-full border rounded p-2 text-right bg-gray-100" />
+        <input id="descarte"  type="text" readonly class="w-full border rounded p-2 text-right bg-gray-100" />
       </div>
 
       <div>
@@ -207,7 +207,7 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
             const div = document.createElement('div');
             div.innerHTML = `
               <label class="block text-xs font-medium text-gray-600 mb-1">${item.produto_nome}</label>
-              <input id="peso-item-${item.id}" type="text" class="w-full border rounded p-2 text-right" placeholder="Peso em kg" />
+              <input inputmode="numeric" id="peso-item-${item.id}" type="text" class="w-full border rounded p-2 text-right" placeholder="Peso em kg" />
             `;
             container.appendChild(div);
             const inputEl = document.getElementById(`peso-item-${item.id}`);

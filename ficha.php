@@ -32,7 +32,7 @@ $responseUser = file_get_contents($url, false, stream_context_create([
 $dadosUsuario = json_decode($responseUser, true)['userDetails'] ?? [];
 
 $userId = $dadosUsuario['id'] ?? null;
-$unitId = $dadosUsuario['system_unit_id'] ?? null;
+$unitId = $_SESSION['system_unit_id'] ?? null;
 $token  = $dadosUsuario['token'] ?? null;
 
 if (!$userId || !$unitId || !$token) {
@@ -88,6 +88,48 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- FilePond CSS e JS -->
+    <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <style>
+        /* Container principal do FilePond */
+        .filepond--root {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Itens individuais */
+        .filepond--item {
+            width: 100% !important;
+            max-height: 80px;
+        }
+
+        /* Previews de imagem */
+        .filepond--file {
+            max-height: 80px;
+            overflow: hidden;
+        }
+
+        .filepond--image-preview {
+            height: 80px !important;
+            width: auto !important;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        .filepond--image-preview-wrapper {
+            height: 80px !important;
+            overflow: hidden;
+        }
+
+        /* Para remover largura fixa dos previews verticais */
+        .filepond--file-wrapper {
+            max-width: 100% !important;
+        }
+    </style>
+
+
+
 </head>
 <body class="bg-gray-50 text-gray-800 text-sm">
 
@@ -122,7 +164,7 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
 
       <div>
         <label class="block font-medium text-gray-700 mb-1">Fotos (opcional)</label>
-        <input id="fotos" type="file" multiple class="w-full border rounded p-2 bg-white" />
+          <input id="fotos" type="file" multiple class="filepond" name="fotos[]" />
       </div>
 
       <div>
@@ -232,7 +274,7 @@ btnEnviar.addEventListener('click', async () => {
   return {
     'codigo_insumo': item.codigo_insumo,
     'unidade': 'UND',
-    'quantidade': (peso * 1000).toFixed(0) // em gramas, sem casas decimais
+    'quantidade': (peso * 1000).toFixed(0) 
   };
 });
 
@@ -259,6 +301,39 @@ btnEnviar.addEventListener('click', async () => {
     if (res.data.success && res.data.documento) {
       numeroDocumento = res.data.documento;
       Swal.fire('Sucesso', `Movimentação registrada com sucesso!<br><strong>Doc: ${numeroDocumento}</strong>`, 'success');
+        // Upload de arquivos após salvar movimentação
+        const pondFiles = FilePond.find(document.querySelector('#fotos')).getFiles();
+        if (pondFiles.length > 0 && numeroDocumento) {
+            const uploadData = new FormData();
+            uploadData.append('documento', numeroDocumento);
+            uploadData.append('user_id', operador);
+            uploadData.append('system_unit_id', systemUnitId);
+
+            pondFiles.forEach(fileItem => {
+                uploadData.append('fotos[]', fileItem.file, fileItem.file.name);
+            });
+
+            try {
+                const uploadRes = await axios.post('upload.php', uploadData);
+                if (uploadRes.data.success) {
+                    console.log('Arquivos enviados com sucesso');
+                } else {
+                    console.warn('Erro ao enviar arquivos:', uploadRes.data.message);
+                }
+            } catch (e) {
+                console.error('Erro no envio de arquivos:', e);
+            }
+        }
+
+        const fichaPayload = {
+            system_unit_id: systemUnitId,
+            documento: numeroDocumento
+        };
+
+        localStorage.setItem('fichaPdfData', JSON.stringify(fichaPayload));
+        window.open('ficha.html', '_blank');
+
+
     } else {
       Swal.fire('Aviso', 'Movimentação registrada, mas documento não retornado.', 'warning');
     }
@@ -270,6 +345,16 @@ btnEnviar.addEventListener('click', async () => {
 
 
     document.addEventListener('DOMContentLoaded', carregarItensFicha);
+
+    // Inicializa FilePond
+    FilePond.create(document.querySelector('#fotos'), {
+        allowMultiple: true,
+        labelIdle: 'Arraste ou clique para selecionar',
+        maxFiles: 5,
+        acceptedFileTypes: ['image/*'],
+        allowImagePreview: false, // Desativa o preview
+    });
+
   </script>
 </body>
 </html>

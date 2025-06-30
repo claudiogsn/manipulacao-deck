@@ -52,16 +52,18 @@ $dadosUsuario = json_decode($response, true)['userDetails'] ?? [];
   <!-- Conteúdo principal -->
   <main class="p-4 space-y-4">
     <!-- Informações do usuário -->
-    <div class="bg-white p-3 rounded-lg shadow text-sm">
-       <div class="mb-2">
-        <span class="block text-gray-400 text-xs">Unidade</span>
-        <span class="font-medium"><?php echo $dadosUsuario['system_unit_id']; ?> - <?php echo $dadosUsuario['unit_name'] ?? ''; ?></span>
-      </div>
-      <div class="mb-2">
-        <span class="block text-gray-400 text-xs">Função</span>
-        <span class="font-medium"><?php echo $dadosUsuario['function_name']; ?></span>
-      </div>
+   <div class="bg-white p-3 rounded-lg shadow text-sm">
+    <div class="mb-2">
+      <span class="block text-gray-400 text-xs">Unidade</span>
+      <select id="select-unidade" class="border border-gray-300 rounded px-2 py-1 text-sm w-full text-gray-700">
+        <option value="">Carregando unidades...</option>
+      </select>
     </div>
+    <div class="mb-2">
+      <span class="block text-gray-400 text-xs">Função</span>
+      <span class="font-medium"><?php echo $dadosUsuario['function_name']; ?></span>
+    </div>
+  </div>
 
     <!-- Fichas (serão renderizadas aqui) -->
     <div>
@@ -71,20 +73,59 @@ $dadosUsuario = json_decode($response, true)['userDetails'] ?? [];
   </main>
 
   <!-- Script para buscar e exibir fichas -->
-  <script>
-   
-    document.addEventListener('DOMContentLoaded', async () => {
-      
-      const fichasContainer = document.getElementById('fichas-container');
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const fichasContainer = document.getElementById('fichas-container');
+    const selectUnidade = document.getElementById('select-unidade');
 
-      const userId = <?php echo json_encode($dadosUsuario['id']); ?>;
-      const systemUnitId = <?php echo json_encode($dadosUsuario['system_unit_id']); ?>;
-      const token = <?php echo json_encode($dadosUsuario['token']); ?>;
+    const userId = <?php echo json_encode($dadosUsuario['id']); ?>;
+    const unidadeInicial = <?php echo json_encode($dadosUsuario['system_unit_id']); ?>;
+    const token = <?php echo json_encode($dadosUsuario['token']); ?>;
 
-      const baseUrl = location.hostname === 'localhost'
-        ? 'http://localhost/portal-deck/api/v1/index.php'
-        : 'https://portal.vemprodeck.com.br/api/v1/index.php';
+    const baseUrl = location.hostname === 'localhost'
+      ? 'http://localhost/portal-deck/api/v1/index.php'
+      : 'https://portal.vemprodeck.com.br/api/v1/index.php';
 
+    // Carrega unidades disponíveis
+    async function carregarUnidades() {
+      try {
+        const resp = await axios.post(baseUrl, {
+          method: 'getUnitsUser',
+          data: { user: userId }
+        }, {
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = resp.data;
+        if (result.success && Array.isArray(result.units)) {
+          selectUnidade.innerHTML = '';
+          result.units.forEach(unidade => {
+            const option = document.createElement('option');
+            option.value = unidade.id;
+            option.textContent = `${unidade.id} - ${unidade.name}`;
+            if (parseInt(unidade.id) === parseInt(unidadeInicial)) {
+              option.selected = true;
+            }
+            selectUnidade.appendChild(option);
+          });
+
+          // Carrega fichas da unidade inicial
+          carregarFichas(selectUnidade.value);
+        } else {
+          selectUnidade.innerHTML = '<option value="">Erro ao carregar unidades</option>';
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar unidades', e);
+        selectUnidade.innerHTML = '<option value="">Erro ao carregar unidades</option>';
+      }
+    }
+
+    // Carrega as fichas da unidade selecionada
+    async function carregarFichas(systemUnitId) {
+      fichasContainer.innerHTML = '';
       Swal.fire({
         title: 'Carregando fichas...',
         allowOutsideClick: false,
@@ -129,7 +170,6 @@ $dadosUsuario = json_decode($response, true)['userDetails'] ?? [];
               window.location.href = `ficha.php?id=${ficha.id}`;
             });
 
-
             fichasContainer.appendChild(card);
           });
         } else {
@@ -140,7 +180,28 @@ $dadosUsuario = json_decode($response, true)['userDetails'] ?? [];
         console.error(error);
         fichasContainer.innerHTML = '<p class="col-span-2 text-center text-red-500 text-sm">Erro de conexão com o servidor.</p>';
       }
-    });
-  </script>
+    }
+
+    // Evento de troca da unidade
+      selectUnidade.addEventListener('change', async () => {
+          const novaUnidade = selectUnidade.value;
+
+          if (novaUnidade) {
+              // Salvar na sessão via backend
+              await axios.post('setSessionUnit.php', {
+                  system_unit_id: novaUnidade
+              });
+
+              // Atualizar fichas da nova unidade
+              carregarFichas(novaUnidade);
+          }
+      });
+
+
+      // Inicializa
+    carregarUnidades();
+  });
+</script>
+
 </body>
 </html>

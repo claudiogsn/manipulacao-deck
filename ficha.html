@@ -126,20 +126,23 @@
   ${(() => {
             const rows = [];
             for (let i = 0; i < anexosBase64.length; i += 2) {
+                const isLastSingle = !anexosBase64[i + 1];
                 rows.push(`
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; page-break-inside: avoid;">
-          <div style="width: 49%;">
+        <div style="display: flex; justify-content: ${isLastSingle ? 'center' : 'space-between'}; gap: 10px; margin-bottom: 10px; page-break-inside: avoid;">
+          <div style="width: ${isLastSingle ? '80%' : '49%'};">
             <img src="${anexosBase64[i]}" style="width: 100%; max-height: 280px; object-fit: contain; border: 1px solid #ccc; background: #fff; padding: 4px;" />
           </div>
+          ${!isLastSingle ? `
           <div style="width: 49%;">
-            ${anexosBase64[i + 1] ? `<img src="${anexosBase64[i + 1]}" style="width: 100%; max-height: 280px; object-fit: contain; border: 1px solid #ccc; background: #fff; padding: 4px;" />` : ''}
-          </div>
+            <img src="${anexosBase64[i + 1]}" style="width: 100%; max-height: 280px; object-fit: contain; border: 1px solid #ccc; background: #fff; padding: 4px;" />
+          </div>` : ''}
         </div>
       `);
             }
             return rows.join('');
         })()}
 </div>
+
 
 
 

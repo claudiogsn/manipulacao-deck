@@ -127,13 +127,10 @@
             const rows = [];
             for (let i = 0; i < anexosBase64.length; i += 2) {
                 const primeira = anexosBase64[i];
-                let segunda = anexosBase64[i + 1];
-
-                // Se não houver imagem par, repete a última
-                if (!segunda) segunda = primeira;
+                let segunda = anexosBase64[i + 1] || primeira;
 
                 rows.push(`
-        <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; page-break-inside: avoid;">
+        <div style="page-break-inside: avoid; margin-top: ${i > 0 ? '20mm' : '0'}; display: flex; justify-content: space-between; gap: 10px;">
           <div style="width: 49%;">
             <img src="${primeira}" style="width: 100%; max-height: 300px; object-fit: contain; border: 1px solid #ccc; padding: 4px; background: #fff;" />
           </div>
@@ -146,6 +143,7 @@
             return rows.join('');
         })()}
 </div>
+
 
 
 

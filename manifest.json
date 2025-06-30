@@ -3,7 +3,7 @@
   "name": "Manipulação Deck",
   "start_url": "/manipulacao/index.php",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#ff9800",
   "theme_color": "#ff9800",
   "orientation": "portrait",
   "icons": [

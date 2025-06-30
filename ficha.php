@@ -181,6 +181,11 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
       ? 'http://localhost/portal-deck/api/v1/index.php'
       : 'https://portal.vemprodeck.com.br/api/v1/index.php';
 
+
+    const baseUrlredirect = window.location.hostname !== 'localhost' ?
+        'https://vemprodeck.com.br/manipulacao' :
+        'http://localhost/manipulacao-deck';
+
     const fichaId = <?php echo json_encode($idFicha); ?>;
     const codigoProduto = <?php echo json_encode($codigo_produto); ?>;
     const systemUnitId = <?php echo json_encode($dadosUsuario['system_unit_id']); ?>;
@@ -331,7 +336,7 @@ btnEnviar.addEventListener('click', async () => {
         };
 
         localStorage.setItem('fichaPdfData', JSON.stringify(fichaPayload));
-        window.open('ficha.html', '_blank');
+        window.open(`${baseUrlredirect}/ficha.html`, '_blank');
 
 
     } else {

@@ -32,7 +32,7 @@ $responseUser = file_get_contents($url, false, stream_context_create([
 $dadosUsuario = json_decode($responseUser, true)['userDetails'] ?? [];
 
 $userId = $dadosUsuario['id'] ?? null;
-$unitId = $_SESSION['system_unit_id'] ?? null;
+$unitId = $_SESSION['system_unit_id'] ?? $dadosUsuario['system_unit_id'] ?? null;
 $token  = $dadosUsuario['token'] ?? null;
 
 if (!$userId || !$unitId || !$token) {

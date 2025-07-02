@@ -204,6 +204,26 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
     }
 
 
+    function limparFormulario() {
+        pesoBrutoField.value = '';
+        descarteField.value = '';
+        document.getElementById('observacao').value = '';
+
+        // Limpa campos de peso dos itens
+        itensFicha.forEach(item => {
+            const input = document.getElementById(`peso-item-${item.id}`);
+            if (input) input.value = '';
+        });
+
+        // Limpa FilePond
+        const pondInstance = FilePond.find(document.querySelector('#fotos'));
+        if (pondInstance) {
+            pondInstance.removeFiles();
+        }
+    }
+
+
+
     let itensFicha = [];
     const descarteField = document.getElementById('descarte');
     const pesoBrutoField = document.getElementById('peso-bruto');
@@ -354,6 +374,7 @@ btnEnviar.addEventListener('click', async () => {
         };
 
         localStorage.setItem('fichaPdfData', JSON.stringify(fichaPayload));
+        limparFormulario();
         window.location.href = `${baseUrlredirect}/ficha.html`;
 
     } else {

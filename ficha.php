@@ -307,7 +307,6 @@ btnEnviar.addEventListener('click', async () => {
       numeroDocumento = res.data.documento;
       Swal.fire('Sucesso', `Movimentação registrada com sucesso!<br><strong>Doc: ${numeroDocumento}</strong>`, 'success');
         // Upload de arquivos após salvar movimentação
-        // Upload de arquivos após salvar movimentação
         const pondFiles = FilePond.find(document.querySelector('#fotos')).getFiles();
         if (pondFiles.length > 0 && numeroDocumento) {
             const uploadData = new FormData();
@@ -320,14 +319,9 @@ btnEnviar.addEventListener('click', async () => {
             });
 
             try {
-                await Swal.fire({
-                    title: 'Enviando arquivos...',
-                    text: 'Aguarde enquanto as imagens são enviadas.',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
+                console.log('Enviando arquivos para upload...');
 
-                const uploadRes = await axios.post('upload.php', uploadData);
+                const uploadRes = await axios.post(`${baseUrlredirect}/upload.php`, uploadData);
 
                 Swal.close();
 

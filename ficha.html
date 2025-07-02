@@ -43,8 +43,20 @@
 </head>
 <body>
 
-<div id="conteudo-pdf">Carregando ficha de manipulação...</div>
+<button onclick="history.back()" style="
+    background-color: #FFA70B;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 20px;
+">
+    Voltar
+</button>
 
+<div id="conteudo-pdf">Carregando ficha de manipulação...</div>
 <script>
     const localData = JSON.parse(localStorage.getItem('fichaPdfData'));
     if (!localData || !localData.documento || !localData.system_unit_id) {

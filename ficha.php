@@ -278,7 +278,7 @@ btnEnviar.addEventListener('click', async () => {
   const peso = parseFloat(document.getElementById(`peso-item-${item.id}`).value.replace(',', '.')) || 0;
   return {
     'codigo_insumo': item.codigo_insumo,
-    'unidade': 'UND',
+    'unidade': 'KG',
     'quantidade': (peso * 1000).toFixed(0) 
   };
 });

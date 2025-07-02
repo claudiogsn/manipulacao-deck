@@ -57,15 +57,41 @@
         : 'https://portal.vemprodeck.com.br/api/v1/index.php';
 
     async function getBase64ImageFromURL(url) {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
+        const fallbackBrokenImage =
+            'data:image/svg+xml;base64,' +
+            btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#ccc" viewBox="0 0 24 24">
+            <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM8 11l3 4 4-5 5 6H5l3-5Z"/>
+        </svg>`);
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const blob = await response.blob();
+
+            return await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = () => reject('Erro ao converter imagem para base64');
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.warn('Erro ao carregar imagem:', error);
+            return fallbackBrokenImage;
+        }
     }
+
+    function formatarDataHora(dataStr) {
+        const data = new Date(dataStr);
+        const dia = String(data.getDate()).padStart(2, '0');
+        const mes = String(data.getMonth() + 1).padStart(2, '0');
+        const ano = data.getFullYear();
+        const hora = String(data.getHours()).padStart(2, '0');
+        const minuto = String(data.getMinutes()).padStart(2, '0');
+        return `${dia}/${mes}/${ano} às ${hora}:${minuto}`;
+    }
+
+
 
     async function gerarFicha(data, logoBase64) {
         const { cabecalho, itens, anexos } = data;
@@ -89,12 +115,14 @@
       <hr>
       <p><strong>Unidade:</strong> ${cabecalho.nome_unidade}</p>
       <p><strong>Operador:</strong> ${cabecalho.nome_operador}</p>
-      <p><strong>Data:</strong> ${cabecalho.data}</p>
+      <p><strong>Data:</strong> ${formatarDataHora(cabecalho.data)}</p>
       <p><strong>Documento:</strong> ${cabecalho.documento}</p>
       <p><strong>Produto:</strong> ${produto}</p>
       <p><strong>Peso Bruto:</strong> ${parseFloat(cabecalho.peso_bruto).toFixed(3)} kg</p>
       <p><strong>Descarte:</strong> ${parseFloat(cabecalho.descarte).toFixed(3)} kg (${cabecalho.percentual_descarte}%)</p>
       <p><strong>Aproveitamento:</strong> ${cabecalho.percentual_aproveitamento}%</p>
+      <p><strong>Observação:</strong> ${cabecalho.observacao}</p>
+
       <hr>
 
       <table>

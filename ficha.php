@@ -225,10 +225,8 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
 
       if (descarte < 0) {
         descarteField.classList.add('text-red-600', 'font-bold');
-        btnEnviar.disabled = true;
       } else {
         descarteField.classList.remove('text-red-600', 'font-bold');
-        btnEnviar.disabled = false;
       }
     }
 
@@ -270,9 +268,19 @@ $codigo_produto = json_decode($responseFicha, true)['data']['codigo_produto'] ??
     let numeroDocumento = null;
 
 btnEnviar.addEventListener('click', async () => {
-  const pesoBruto = parseFloat(pesoBrutoField.value.replace(',', '.')) || 0;
-  const descarte = parseFloat(descarteField.value) || 0;
-  const obs = document.getElementById('observacao').value;
+    const pesoBruto = parseFloat(pesoBrutoField.value.replace(',', '.')) || 0;
+    const descarte = parseFloat(descarteField.value) || 0;
+    const obs = document.getElementById('observacao').value;
+
+    if (descarte < 0) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Descarte inválido',
+            text: 'O valor de descarte está negativo. Verifique os pesos informados nos insumos.',
+            confirmButtonText: 'Corrigir',
+        });
+        return; // impede envio
+    }
 
   const itens = itensFicha.map(item => {
   const peso = parseFloat(document.getElementById(`peso-item-${item.id}`).value.replace(',', '.')) || 0;
@@ -346,8 +354,7 @@ btnEnviar.addEventListener('click', async () => {
         };
 
         localStorage.setItem('fichaPdfData', JSON.stringify(fichaPayload));
-        window.open(`${baseUrlredirect}/ficha.html`, '_blank');
-
+        window.location.href = `${baseUrlredirect}/ficha.html`;
 
     } else {
       Swal.fire('Aviso', 'Movimentação registrada, mas documento não retornado.', 'warning');
